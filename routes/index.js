@@ -674,6 +674,78 @@ exports.refundquery = function(req, res){
 }
 
 
+exports.downloadurlquery = function(req, res){
+    var app_id = AlipayConfig.app_id;
+    var method = "alipay.data.dataservice.bill.downloadurl.query";
+    var charset = "UTF-8";
+    var sign_type = "RSA";
+    var timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+    var format = "json";
+    var version = "1.0";
+    var biz_content = {
+        bill_type : "signcustomer",
+        bill_date : "2017-02-03"
+    }
+
+    //把请求参数打包成数组
+    var sParaTemp = [];
+    sParaTemp.push(["app_id", app_id]);
+    sParaTemp.push(["method", method]);
+    sParaTemp.push(["charset", charset]);
+    sParaTemp.push(["sign_type", sign_type]);
+    sParaTemp.push(["timestamp", timestamp]);
+    //sParaTemp.push(["timestamp", '2017-01-16 16:16:53']);
+    sParaTemp.push(["format", format]);
+    sParaTemp.push(["version", version]);
+    sParaTemp.push(["biz_content", JSON.stringify(biz_content)]);
+    //sParaTemp.push(["biz_content", biz_content]);
+
+    var sPara = alib.buildRequestPara2(sParaTemp);
+
+    var path = AlipayConfig.ALIPAY_PATH;
+
+    var sURL = alib.getPath(path, sPara);
+    console.log('sURL', "https://openapi.alipay.com/"+sURL);
+
+    //res.send("https://openapi.alipay.com/"+sURL);
+    //res.redirect("https://openapi.alipay.com/"+sURL);
+    request({
+        url:"https://openapi.alipay.com/"+sURL,
+        method:'GET',
+        headers: { 'content-type': 'application/json'
+    }},function(error, response, body){
+        console.log("支付宝返回内容:\n", body);
+        body = JSON.parse(body);
+
+        var result = alib.checkRSA(body.alipay_data_dataservice_bill_downloadurl_query_response, body.sign);    
+
+        var response = body.alipay_data_dataservice_bill_downloadurl_query_response;
+        var wholestring = "<style>span {color: red;}</style><div> \
+            【网关返回码】<label>code:</label><span>"+response.code+"</span><br /> \
+            【网关返回描述】<label>msg:</label><span>"+response.msg+"</span><br /> \
+            【账单】<label>bill_download_url:</label><span>"+response.bill_download_url+"</span></div>";
+
+        if(response.code != '10000'){
+            res.send(wholestring);
+        } else {
+            var path = "";
+            path = path + response.bill_download_url;
+            var filep = '/alipay_bill_download';
+            if(!fs.existsSync(filep)){ //每个文件创建一个文件夹
+                fs.mkdirSync(filep);
+            }
+
+            request(path).pipe(fs.createWriteStream(filep+"/mydownload.csv.zip"));
+            res.send("<h3>文件已经下载至"+filep+"</h3><br>"+wholestring);
+        }
+
+        
+    })
+
+}
+
+
+
 exports.paynotify = function(req, res){
     //http://127.0.0.1:3000/paynotify?trade_no=2008102203208746&out_trade_no=3618810634349901&discount=-5&payment_type=1&subject=iphone%E6%89%8B%E6%9C%BA&body=Hello&price=10.00&quantity=1&total_fee=10.00&trade_status=TRADE_FINISHED&refund_status=REFUND_SUCCESS&seller_email=chao.chenc1%40alipay.com&seller_id=2088002007018916&buyer_id=2088002007013600&buyer_email=13758698870&gmt_create=2008-10-22+20%3A49%3A31&is_total_fee_adjust=N&gmt_payment=2008-10-22+20%3A49%3A50&gmt_close=2008-10-22+20%3A49%3A46&gmt_refund=2008-10-29+19%3A38%3A25&use_coupon=N&notify_time=2009-08-12+11%3A08%3A32&notify_type=%E4%BA%A4%E6%98%93%E7%8A%B6%E6%80%81%E5%90%8C%E6%AD%A5%E9%80%9A%E7%9F%A5%28trade_status_sync%29&notify_id=70fec0c2730b27528665af4517c27b95&sign_type=DSA&sign=_p_w_l_h_j0b_gd_aejia7n_ko4_m%252Fu_w_jd3_nx_s_k_mxus9_hoxg_y_r_lunli_pmma29_t_q%253D%253D&extra_common_param=%E4%BD%A0%E5%A5%BD%EF%BC%8C%E8%BF%99%E6%98%AF%E6%B5%8B%E8%AF%95%E5%95%86%E6%88%B7%E7%9A%84%E5%B9%BF%E5%91%8A%E3%80%82
     //获取支付宝的通知返回参数，可参考技术文档中页面跳转同步通知参数列表(以下仅供参考)//

@@ -32,6 +32,8 @@ app.configure('production', function(){
 app.get('/', routes.index);
 app.get('/paynotify',routes.paynotify);
 app.get('/payreturn',routes.payreturn);
+app.get('/downloadurlquery',routes.downloadurlquery);
+
 
 //线上
 app.post('/alipayto',routes.alipayto);

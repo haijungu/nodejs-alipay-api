@@ -63,6 +63,14 @@ $(document).ready(function(){
 	});
 
 
+	$("#downloadurlquery").click(function(){
+		$.get( "downloadurlquery?outno="+ document.alipayment.outno.value +"&total_fee=" + document.alipayment.total_fee.value, function(data,status){
+		    	$("#phtm").html(data);
+		});
+		
+	});
+
+
 
 
 
@@ -296,7 +304,12 @@ ul,ol {
 
 </div>
 <h2 style="color:red">无论是线上支付 还是线下支付 交易创建时 标题、订单号、付款金额必填</h2><br />
-    <h1><%= message %></h1>
+<button class="new-btn-login" id="downloadurlquery" target="_blank" style="text-align: center;">对账单查询</button>
+<br>
+<p id="phtm"></p>
+<br>
+<br>
+<h1><%= message %></h1>
 <form name=alipayment onSubmit="return CheckForm();" action=alipayto
 	method=post target="_blank">
 <div id="body" style="clear: left">

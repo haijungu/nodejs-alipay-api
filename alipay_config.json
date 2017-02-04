@@ -1,0 +1,17 @@
+{
+	"alipay_cfg": {
+	    "partner":"",
+	    "key":"",
+	    "seller_email":"",
+	    "notify_url":"http:// 99.6.187.30:3000/paynotify",
+	    "return_url":"http://127.0.0.1:3000/payreturn",
+	    "ALIPAY_HOST1": "mapi.alipay.com",
+	    "ALIPAY_HOST2": "openapi.alipay.com",
+	    "HTTPS_VERIFY_PATH": "/gateway.do?service=notify_verify&",
+	    "ALIPAY_PATH":"gateway.do?",
+	    "log_path":"~/alipay_log_.txt",
+	    "input_charset":"UTF-8",
+	    "sign_type":"MD5",
+	    "app_id":"2016030101172374"
+	}
+}

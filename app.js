@@ -45,6 +45,10 @@ app.get('/precreate',routes.precreate);
 app.get('/payquery',routes.payquery);
 app.get('/traderefund',routes.traderefund);
 app.get('/refundquery',routes.refundquery);
+//城市服务
+app.get('/wapay',routes.wapay);
+app.get('/oauthtoken',routes.oauthtoken);
+
 
 app.listen(3000, function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

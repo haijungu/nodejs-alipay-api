@@ -369,18 +369,16 @@ exports.refundfastquery = function(req, res){
     }},function(error, response, body){
         console.log("支付宝返回内容:\n", body);
 
-        var parse = new require('xml2js').Parser({explicitArray: false});
+        var arr = body.split('&');
+/*
+is_success=T&result_details=201702061486356656682^2017020621001004600203645649^0.01^SUCCESS$alipay-test12@alipay.com^2088201564809153^0.00^SUCCESS
+*/
+        var wholestring = "<style>span {color: red;}</style><div> <br>\
+            【请求是否成功】<label>is_success:</label><span>"+arr[0]+"</span> <br >\
+            【详细信息】<label>details:</label><span>"+arr[1]+"</span></div>";
 
-        parse.parseString(body, function(err,result){
-            var data_json = result;
+        res.send(wholestring);
 
-            var wholestring = "<style>span {color: red;}</style><div> <br>\
-                【请求是否成功】<label>is_success:</label><span>"+data_json.alipay.is_success+"</span> <br >\
-                【报错了没】<label>error:</label><span>"+data_json.alipay.error+"</span></div>";
-
-            res.send(wholestring);
-
-        });
     })
 
 }
@@ -738,12 +736,79 @@ exports.downloadurlquery = function(req, res){
             request(path).pipe(fs.createWriteStream(filep+"/mydownload.csv.zip"));
             res.send("<h3>文件已经下载至"+filep+"</h3><br>"+wholestring);
         }
-
-        
     })
 
 }
 
+//手机网站支付
+exports.wapay = function(req, res){
+    var partner = AlipayConfig.partner;
+    var service = "alipay.wap.create.direct.pay.by.user";
+    var sign_type = "MD5";
+    var _input_charset = "UTF-8";
+
+    var out_trade_no = req.query.outno;
+    var subject = req.query.subject;
+    var total_fee = req.query.total_fee;
+    var seller_id = AlipayConfig.partner;
+    var payment_type = 1;
+    var show_url = "www.baidu.com";
+
+    //把请求参数打包成数组
+    var sParaTemp = [];
+    sParaTemp.push(["partner", partner]);
+    sParaTemp.push(["service", service]);
+    sParaTemp.push(["_input_charset", _input_charset]);
+    sParaTemp.push(["sign_type", sign_type]);
+    sParaTemp.push(["out_trade_no", out_trade_no]);
+    sParaTemp.push(["subject", subject]);
+    sParaTemp.push(["total_fee", total_fee]);
+    sParaTemp.push(["seller_id", seller_id]);
+    sParaTemp.push(["payment_type", payment_type]);
+    sParaTemp.push(["show_url", show_url]);
+
+    var sPara = alib.buildRequestPara(sParaTemp);
+    var path=AlipayConfig.ALIPAY_PATH;
+
+    var sURL = alib.getPath(path, sPara);
+    console.log('sURL', "https://mapi.alipay.com/"+sURL);
+    res.redirect("https://mapi.alipay.com/"+sURL);
+}
+
+
+exports.oauthtoken = function(req, res){
+    var app_id = AlipayConfig.app_id;
+    var method = "alipay.system.oauth.token";
+    var charset = AlipayConfig.input_charset;
+    var sign_type = "RSA";
+    var timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+    var format = "json";
+    var version = "1.0";
+    var grant_type = "authorization_code";
+    var code = "4b203fe6c11548bcabd8da5bb087a83b";
+    
+    //把请求参数打包成数组
+    var sParaTemp = [];
+    sParaTemp.push(["app_id", app_id]);
+    sParaTemp.push(["method", method]);
+    sParaTemp.push(["charset", charset]);
+    sParaTemp.push(["sign_type", sign_type]);
+    sParaTemp.push(["timestamp", timestamp]);
+    sParaTemp.push(["format", format]);
+    sParaTemp.push(["version", version]);
+    sParaTemp.push(["code", code]);
+    sParaTemp.push(["grant_type", grant_type]);
+    
+
+    var sPara = alib.buildRequestPara2(sParaTemp);
+
+    var path = AlipayConfig.ALIPAY_PATH;
+
+    var sURL = alib.getPath(path, sPara);
+    console.log('sURL', "https://openapi.alipay.com/"+sURL);
+    res.redirect("https://openapi.alipay.com/"+sURL);
+
+}
 
 
 exports.paynotify = function(req, res){
